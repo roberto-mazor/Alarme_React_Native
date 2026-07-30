@@ -1,42 +1,49 @@
-import * as Notifications from 'expo-notifications'
-import { Platform, Alert } from 'react-native'
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 
+// Configuração simples para exibir alerta quando o app estiver aberto
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
+        shouldShowAlert: true,
         shouldPlaySound: true,
-        shouldShowList: true,
-        shouldShowBanner: true,
         shouldSetBadge: false,
-        shouldShowAlert: true
-    })
-})
+        shouldShowBanner: true,
+        shouldShowList: true,
+    }),
+});
 
-export const configurarCanalNoticacao = async (): Promise<void> => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-        Alert.alert('Permissão necessária', 'Ative as notificações para receber o alarme.');
+// Pedir permissão e criar o canal no Android
+export const configurarCanalNotificacao = async (): Promise<void> => {
+    await Notifications.requestPermissionsAsync();
+
+    if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('alarm_channel', {
+            name: 'Alarmes',
+            importance: Notifications.AndroidImportance.HIGH,
+            vibrationPattern: [0, 500, 250, 500],
+        });
     }
-}
+};
 
-export const agendarAlarme = async (horarioTexto: string): Promise<boolean> => {
-    const expressaoRegularHorario = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    return false;
-}
+// Agenda o alarme recebendo diretamente hora e minuto
+export const agendarAlarme = async (horas: number, minutos: number): Promise<void> => {
+    const dataDisparo = new Date();
+    dataDisparo.setHours(horas, minutos, 0, 0);
 
-const [horas, minutos] = horarioTexto.split(':').map(number);
-const horaAtual = new Date();
-const dataDisparo = new Date();
-dataDisparo.setHours(horas, minutos, 0, 0);
+    // Se o horário já passou hoje, joga para amanhã
+    if (dataDisparo.getTime() <= Date.now()) {
+        dataDisparo.setDate(dataDisparo.getDate() + 1);
+    }
 
-if (dataDisparo.scheduleNotificationAsync({
-    content: {
-        title: ' Hora do Alarme',
-        body: `Seu Alarme programado para as ${horarioTexto} chegou!`,
-        vibrate: [0, 500, 250, 500],
-    },
-    trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: dataDisparo,
-        channelId: 'alarm_channel',
-    },
-}))
+    await Notifications.scheduleNotificationAsync({
+        content: {
+            title: '⏰ Hora do Alarme!',
+            body: 'O horário programado chegou!',
+        },
+        trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: dataDisparo,
+            channelId: 'alarm_channel',
+        },
+    });
+};

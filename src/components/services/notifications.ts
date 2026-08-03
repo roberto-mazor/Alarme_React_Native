@@ -11,7 +11,7 @@ Notifications.setNotificationHandler({
     }),
 });
 
-// Agendamento direto
+// Agendamento
 export const agendarAlarme = async (dataDisparo: Date) => {
     await Notifications.scheduleNotificationAsync({
         content: {

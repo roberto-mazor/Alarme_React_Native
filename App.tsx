@@ -1,67 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert, Button } from 'react-native';
-import { configurarCanalNotificacao, agendarAlarme } from '@/components/services/notifications';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { Button } from './src/components/button';
+import { agendarAlarme } from '@/components/services/notifications';
 import { dispararVibracao } from '@/components/services/vibration';
 
-export default function App(): React.JSX.Element {
-  const [horario, setHorario] = useState<string>('');
+export default function App() {
+  const [horario, setHorario] = useState('');
 
-  useEffect(() => {
-    configurarCanalNotificacao();
-  }, []);
+  const lidarComAlarme = async () => {
+    await Notifications.requestPermissionsAsync(); // Solicita as permissões do usuário antes de agendar
 
-  const lidarComAlarme = async (): Promise<void> => {
-    if (!horario.includes(':')) {
-      Alert.alert('Erro', 'Digite no formato 14:30');
-      return;
+    // Converte o texto HH:mm em horas e minutos
+    const [horas, minutos] = horario.split(':').map(Number);
+    const data = new Date();
+    data.setHours(horas, minutos, 0, 0);
+
+    // Ajusta para amanhã se a hora já passou de hoje
+    if (data.getTime() <= Date.now()) {
+      data.setDate(data.getDate() + 1);
     }
 
-    const [horas, minutos] = horario.split(':').map(Number);
-
-    await agendarAlarme(horas, minutos);
+    await agendarAlarme(data);
     dispararVibracao();
 
-    Alert.alert('Sucesso!', `Alarme programado para às ${horario}`);
+    Alert.alert('Sucesso!', `Alarme agendado para ${horario}`);
     setHorario('');
   };
 
-  return React.createElement(
-    View,
-    { style: estilos.container },
-    React.createElement(Text, { style: estilos.titulo }, 'Meu Alarme'),
-    React.createElement(TextInput, {
-      style: estilos.input,
-      placeholder: '14:30',
-      keyboardType: 'numbers-and-punctuation',
-      maxLength: 5,
-      value: horario,
-      onChangeText: setHorario,
-    }),
-    React.createElement(Button as any, { title: 'Salvar Alarme', onPress: lidarComAlarme })
+  return (
+    <View style={estilos.container}>
+      <Text style={estilos.titulo}>Meu Alarme</Text>
+
+      <TextInput
+        style={estilos.input}
+        placeholder="14:30"
+        maxLength={5}
+        value={horario}
+        onChangeText={setHorario}
+      />
+
+      <Button titulo="Salvar Alarme" onPress={lidarComAlarme} />
+    </View>
   );
 }
 
 const estilos = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#F5FCFF',
-  },
-  titulo: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#CCC',
-    borderRadius: 8,
-    fontSize: 20,
-    textAlign: 'center',
-    backgroundColor: '#FFF',
-    marginBottom: 15,
-  },
+  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  titulo: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
+  input: { height: 50, borderWidth: 1, borderColor: '#CCC', borderRadius: 8, fontSize: 20, textAlign: 'center', marginBottom: 15 },
 });

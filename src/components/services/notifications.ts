@@ -14,13 +14,17 @@ Notifications.setNotificationHandler({
 });
 
 // Agendamento
-export const agendarAlarme = (dataDisparo: Date, horarioTexto: string) => {
-    const agora = new Date().getTime();
-    const tempoEspera = dataDisparo.getTime() - agora;
-
-    // Agendamento
-    setTimeout(() => {
-        dispararVibracao();
-        Alert.alert('⏰ Hora do Alarme!', `Seu alarme de ${horarioTexto} chegou!`);
-    }, tempoEspera);
+export const agendarAlarme = async (dataDisparo: Date) => {
+    await Notifications.scheduleNotificationAsync({
+        content: {
+            title: '⏰ Hora do Alarme!',
+            body: 'O horário programado chegou!',
+            sound: 'default',
+        },
+        trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: dataDisparo,
+            channelId: 'alarm_channel', // Vincula ao canal com som
+        },
+    });
 };

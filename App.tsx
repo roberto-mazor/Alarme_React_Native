@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
-import { Button } from './src/components/button';
+import { Button } from '@/components/button';
 import { agendarAlarme } from '@/components/services/notifications';
 import { dispararVibracao } from '@/components/services/vibration';
 
@@ -32,7 +32,8 @@ export default function App() {
       <TextInput
         style={estilos.input}
         placeholder="14:30"
-        maxLength={5}
+        keyboardType="numeric" // Teclado numérico apenas
+        maxLength={5}          // Limita ao formato HH:mm (5 caracteres)
         value={horario}
         onChangeText={setHorario}
       />

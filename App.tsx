@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import { Button } from './src/components/button';
 import { agendarAlarme } from '@/components/services/notifications';
 import { dispararVibracao } from '@/components/services/vibration';
@@ -8,20 +7,18 @@ import { dispararVibracao } from '@/components/services/vibration';
 export default function App() {
   const [horario, setHorario] = useState('');
 
-  const lidarComAlarme = async () => {
-    await Notifications.requestPermissionsAsync(); // Solicita as permissões do usuário antes de agendar
+  // Garante a criação do canal assim que o aplicativo abre
 
-    // Converte o texto HH:mm em horas e minutos
+  const lidarComAlarme = async () => {
     const [horas, minutos] = horario.split(':').map(Number);
     const data = new Date();
     data.setHours(horas, minutos, 0, 0);
 
-    // Ajusta para amanhã se a hora já passou de hoje
     if (data.getTime() <= Date.now()) {
       data.setDate(data.getDate() + 1);
     }
 
-    await agendarAlarme(data, horario);
+    await agendarAlarme(data);
     dispararVibracao();
 
     Alert.alert('Sucesso!', `Alarme agendado para ${horario}`);

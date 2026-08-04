@@ -21,7 +21,7 @@ export default function App() {
       data.setDate(data.getDate() + 1);
     }
 
-    await agendarAlarme(data);
+    await agendarAlarme(data, horario);
     dispararVibracao();
 
     Alert.alert('Sucesso!', `Alarme agendado para ${horario}`);

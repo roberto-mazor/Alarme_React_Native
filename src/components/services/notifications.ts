@@ -1,4 +1,6 @@
 import * as Notifications from 'expo-notifications';
+import { Alert } from 'react-native';
+import { dispararVibracao } from './vibration';
 
 // Configuração básica de exibição
 Notifications.setNotificationHandler({
@@ -12,15 +14,13 @@ Notifications.setNotificationHandler({
 });
 
 // Agendamento
-export const agendarAlarme = async (dataDisparo: Date) => {
-    await Notifications.scheduleNotificationAsync({
-        content: {
-            title: '⏰ Hora do Alarme!',
-            body: 'O horário programado chegou!',
-        },
-        trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DATE,
-            date: dataDisparo,
-        },
-    });
+export const agendarAlarme = (dataDisparo: Date, horarioTexto: string) => {
+    const agora = new Date().getTime();
+    const tempoEspera = dataDisparo.getTime() - agora;
+
+    // Agendamento
+    setTimeout(() => {
+        dispararVibracao();
+        Alert.alert('⏰ Hora do Alarme!', `Seu alarme de ${horarioTexto} chegou!`);
+    }, tempoEspera);
 };
